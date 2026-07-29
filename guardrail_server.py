@@ -29,6 +29,11 @@ def normalize_path(token: str, base: str = WORKDIR) -> str:
         t = HOME
     elif t.startswith("~/"):
         t = HOME + t[1:]
+    # "/workspace" is shorthand for the agent's actual working directory
+    if t == "/workspace":
+        t = WORKDIR
+    elif t.startswith("/workspace/"):
+        t = WORKDIR + t[len("/workspace"):]
     if not t.startswith("/"):
         t = posixpath.join(base, t)
     return posixpath.normpath(t)
