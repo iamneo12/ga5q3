@@ -5,7 +5,7 @@ POST /guardrail  ->  {"decision": "allow"|"block", "reason": "..."}
 import base64
 import posixpath
 import re
-from urllib.parse import urlsplit
+from urllib.parse import unquote, urlsplit
 
 from flask import Flask, request, jsonify
 
@@ -24,6 +24,9 @@ def normalize_path(token: str, base: str = WORKDIR) -> str:
     t = token.strip()
     if len(t) >= 2 and t[0] == t[-1] and t[0] in ("'", '"'):
         t = t[1:-1]
+    # undo percent-encoding (and simple double-encoding) so "%2e%2e" etc. can't
+    # sneak a literal ".." past normpath's traversal collapsing
+    t = unquote(unquote(t))
     t = t.replace("${HOME}", HOME).replace("$HOME", HOME)
     if t == "~":
         t = HOME
